@@ -3,13 +3,20 @@
 #include <QDebug>
 
 LifeWidget::LifeWidget(QWidget *parent) :
-    QGraphicsView(parent), _life(QSize(50, 50)) {
+    QGraphicsView(parent), _life(Pair(10, 10)), _timer(new QTimer(this)) {
     _color = Qt::black;
     // отключение полос прокрутки
     setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     // установка сцены и ограничение видимой области
-    setSceneRect(0, 0, _life.getFieldSize().width(), _life.getFieldSize().height());
+    setSceneRect(0, 0, _life.getFieldSize().getX(), _life.getFieldSize().getY());
+    // таймер
+    connect(_timer, SIGNAL(timeout()), this, SLOT(updateLife()));
+    _timer->setInterval(1000); // интервал в миллисекундах, 1000мс = 1с
+    // это костыль для заполнения начальной матрицы, мб позже сделаю по клику
+    _life.setLife(Pair(1, 2));
+    _life.setLife(Pair(1, 3));
+    _life.setLife(Pair(1, 4));
 }
 
 void LifeWidget::paintEvent(QPaintEvent* ) {
@@ -26,16 +33,14 @@ void LifeWidget::paintEvent(QPaintEvent* ) {
     QPen cellPen(_color);
     painter.setPen(cellPen);
     // отрисовка ячеек
-    for(int i = 0; i < _life.getFieldSize().height(); ++i) {
-        for(int j = 0; j < _life.getFieldSize().width(); ++j) {
+    for(int i = 0; i < _life.getFieldSize().getX(); ++i) {
+        for(int j = 0; j < _life.getFieldSize().getY(); ++j) {
             int x = i * _kCellSize;
             int y = j * _kCellSize;
             QRect square(x, y, _kCellSize, _kCellSize);
 
-            // условие для отрисовки, пока костыль
-            QColor state = (i == j) ? _kAlive : _kDead;
+            QColor state = (_life.getElement(Pair(i, j))) ? _kAlive : _kDead;
             painter.fillRect(square, QBrush(state));
-            //
 
             painter.setPen(cellPen);
             painter.drawRect(square);
@@ -45,3 +50,20 @@ void LifeWidget::paintEvent(QPaintEvent* ) {
     painter.end();  // Завершаю рисование
 }
 
+void LifeWidget::updateLife() {
+    _life.changeGeneration();
+    viewport()->update();
+}
+
+void LifeWidget::start() const {
+    _timer->start();
+}
+
+void LifeWidget::stop() const {
+    _timer->stop();
+}
+
+void LifeWidget::step() {
+    _life.changeGeneration();
+    viewport()->update();
+}

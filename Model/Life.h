@@ -6,23 +6,23 @@
 #include <QSize>
 #include <QVector>
 
-class Life : public QObject
-{
-    Q_OBJECT
+#include "Model/Pair.h"
 
+class Life
+{
 public:
     // конструктор с параметрами : высота, ширина
-    Life(const QSize&);
+    Life(const Pair&);
 
     // геттер поля _fieldSize
-    QSize getFieldSize() const { return _fieldSize; }
+    Pair getFieldSize() const { return _fieldSize; }
     // возвращает элемент _generation
-    bool getElem(const int &i, const int &j) const { return _generation[i][j]; }
+    bool getElement(const Pair& obj) const { return _generation[obj.getX()][obj.getY()]; }
 
     // мето для изменения размера текущего вектора с очисткой
-    void resize(const QSize&);
+    void resize(const Pair&);
     // метод, дающий жизнь
-    void setLife(const QSize&);
+    void setLife(const Pair&);
     // апокалипсис
     void killAll();
     // генерация нового поколения на основе старого
@@ -30,10 +30,18 @@ public:
 
 private:
     // метод для подсчета числа живых соседей заданной клетки
-    int calcEnvironment(const QSize&) const;
+    int calcEnvironment(const Pair&) const;
 
-    QSize _fieldSize; // высота/ширина поля
+    Pair _fieldSize; // высота/ширина поля
     QVector<QVector<bool>> _generation; // текущее поколение
+
+    /* траектория движения при обходе клетки:
+     * 2 1 8
+     * 3 x 7
+     * 4 5 6
+    */
+    const QVector<int> _kPathX = {-1, -1,  0,  1, 1, 1, 0, -1};
+    const QVector<int> _kPathY = { 0, -1, -1, -1, 0, 1, 1,  1};
 };
 
 #endif // LIFE_H
