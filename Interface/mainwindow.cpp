@@ -29,15 +29,18 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->label_3->set(LED::Unused);
 }
 
+
 MainWindow::~MainWindow() {
     delete ui;
 }
+
 
 void MainWindow::changeState(const bool &flag) const {
     ui->verticalSlider_2->setDisabled(flag);
     ui->verticalSlider_3->setDisabled(flag);
     ui->pushButton_4->setDisabled(flag);
 }
+
 
 void MainWindow::setLED(const bool &flag) const {
     if(flag) {
@@ -51,75 +54,27 @@ void MainWindow::setLED(const bool &flag) const {
     changeState(flag);
 }
 
+
 void MainWindow::on_pushButton_1_clicked() {
     ui->graphicsView->start();
     setLED(true);
 }
+
 
 void MainWindow::on_pushButton_2_clicked() {
     ui->graphicsView->stop();
     setLED(false);
 }
 
+
 void MainWindow::on_pushButton_3_clicked() {
     ui->graphicsView->step();
     setLED(false);
 }
 
+
 void MainWindow::on_pushButton_4_clicked() {
     ui->graphicsView->clear();
-}
-
-void MainWindow::on_pushButton_7_clicked() {
-    emit this->sendColor(ui->graphicsView->getColor());
-}
-
-void MainWindow::on_verticalSlider_1_valueChanged(int action) {
-    ui->graphicsView->speed(action);
-}
-
-
-void MainWindow::on_verticalSlider_2_valueChanged(int value) {
-    Pair newSize = Pair(value, ui->verticalSlider_3->value());
-    ui->graphicsView->resize(newSize);
-    ui->label->setText(newSize.toString());
-}
-
-void MainWindow::on_verticalSlider_3_valueChanged(int value) {
-    Pair newSize = Pair(ui->verticalSlider_2->value(), value);
-    ui->graphicsView->resize(newSize);
-    ui->label->setText(newSize.toString());
-}
-
-void MainWindow::recieveNewColor(ColorData *newColorData) {
-    ui->graphicsView->setColors(*newColorData);
-}
-
-
-void MainWindow::on_pushButton_8_clicked() {
-    close();
-}
-
-void MainWindow::updateGeneration(const int &gens) {
-    ui->label_4->setText(QString::number(gens));
-}
-
-void MainWindow::generationEnd() {
-    QMessageBox::information(this, "Information", "The simulation is over");
-    setLED(false);
-    ui->graphicsView->stop();
-    ui->label_4->setText("0");
-}
-
-
-QString MainWindow::getPath() {
-    QString path = QFileDialog::getOpenFileName(this, "Choose file", "", "Files JSON (*.json)");
-    if(!path.isEmpty()) {
-        return path;
-    }
-    else {
-        return "-1";
-    }
 }
 
 
@@ -147,3 +102,59 @@ void MainWindow::on_pushButton_6_clicked() {
     }
 }
 
+
+void MainWindow::on_pushButton_7_clicked() {
+    emit this->sendColor(ui->graphicsView->getColor());
+}
+
+
+void MainWindow::on_verticalSlider_1_valueChanged(int action) {
+    ui->graphicsView->speed(action);
+}
+
+
+void MainWindow::on_verticalSlider_2_valueChanged(int value) {
+    Pair newSize = Pair(value, ui->verticalSlider_3->value());
+    ui->graphicsView->resize(newSize);
+    ui->label->setText(newSize.toString());
+}
+
+
+void MainWindow::on_verticalSlider_3_valueChanged(int value) {
+    Pair newSize = Pair(ui->verticalSlider_2->value(), value);
+    ui->graphicsView->resize(newSize);
+    ui->label->setText(newSize.toString());
+}
+
+void MainWindow::recieveNewColor(ColorData *newColorData) {
+    ui->graphicsView->setColors(*newColorData);
+}
+
+
+void MainWindow::on_pushButton_8_clicked() {
+    close();
+}
+
+
+void MainWindow::updateGeneration(const int &gens) {
+    ui->label_4->setText(QString::number(gens));
+}
+
+
+void MainWindow::generationEnd() {
+    QMessageBox::information(this, "Information", "The simulation is over");
+    setLED(false);
+    ui->graphicsView->stop();
+    //ui->label_4->setText("0");
+}
+
+
+QString MainWindow::getPath() {
+    QString path = QFileDialog::getOpenFileName(this, "Choose file", "", "Files JSON (*.json)");
+    if(!path.isEmpty()) {
+        return path;
+    }
+    else {
+        return "-1";
+    }
+}
