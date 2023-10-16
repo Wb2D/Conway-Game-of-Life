@@ -60,7 +60,7 @@ QColor SettingDialog::getNewColor() const {
     }
     else {
         QMessageBox::critical(nullptr, "Error", "Invalid color");
-        return Qt::white;
+        getNewColor();
     }
 }
 

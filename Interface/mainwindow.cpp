@@ -10,8 +10,8 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->pushButton_2->setToolTip("Pause");
     ui->pushButton_3->setToolTip("Step");
     ui->pushButton_4->setToolTip("Clear");
-    ui->pushButton_5->setToolTip("Save");
-    ui->pushButton_6->setToolTip("Load");
+    ui->pushButton_5->setToolTip("Load");
+    ui->pushButton_6->setToolTip("Save");
     ui->pushButton_7->setToolTip("Settings");
     ui->pushButton_8->setToolTip("Quit");
     ui->verticalSlider_1->setToolTip("Speed simulation");
@@ -110,3 +110,40 @@ void MainWindow::generationEnd() {
     ui->graphicsView->stop();
     ui->label_4->setText("0");
 }
+
+
+QString MainWindow::getPath() {
+    QString path = QFileDialog::getOpenFileName(this, "Choose file", "", "Files JSON (*.json)");
+    if(!path.isEmpty()) {
+        return path;
+    }
+    else {
+        return "-1";
+    }
+}
+
+
+void MainWindow::on_pushButton_5_clicked() {
+    QString path = getPath();
+    if(path == "-1") {
+        return;
+    }
+    else {
+        ui->label_4->setText("0");
+        DataWorker::loadLife(ui->graphicsView->getLife(), path);
+        ui->graphicsView->resize();
+        ui->graphicsView->viewport()->update();
+    }
+}
+
+
+void MainWindow::on_pushButton_6_clicked() {
+    QString path = getPath();
+    if(path == "-1") {
+        return;
+    }
+    else {
+        DataWorker::saveLife(ui->graphicsView->getLife(), path);
+    }
+}
+

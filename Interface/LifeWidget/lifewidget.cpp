@@ -110,9 +110,20 @@ void LifeWidget::speed(const int &interval) const {
     _timer->setInterval(interval);
 }
 
+void LifeWidget::resize() {
+    setSceneRect(0, 0, _life.size().getX(), _life.size().getX()); // размер сцены
+    qreal scaleX = width() / (sceneRect().width() * _kCellSize);
+    qreal scaleY = height() / (sceneRect().height() * _kCellSize);
+    setTransform(QTransform().scale(scaleX, scaleY)); // масштабирование
+    viewport()->update();
+}
+
 void LifeWidget::resize(const Pair &newSize) {
     _life.resize(newSize);
     setSceneRect(0, 0, newSize.getX(), newSize.getY()); // размер сцены
+    qreal scaleX = width() / (sceneRect().width() * _kCellSize);
+    qreal scaleY = height() / (sceneRect().height() * _kCellSize);
+    setTransform(QTransform().scale(scaleX, scaleY)); // масштабирование
     viewport()->update();
 }
 

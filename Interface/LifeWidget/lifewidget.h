@@ -35,6 +35,7 @@ public:
     // скорость, с которой меняются поколения
     void speed(const int&) const;
     // изменить размер поля
+    void resize();
     void resize(const Pair&);
     // очистка клеточек
     void clear();
@@ -46,6 +47,8 @@ public:
     unsigned int getGens() const { return _life.getGens(); }
     // возвращает состояние системы
     bool getStatus() const { return _life.getStatus(); }
+    // возвращает Life
+    Life& getLife() { return _life; }
 
 public slots:
     void updateLife();

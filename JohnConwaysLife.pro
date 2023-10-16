@@ -9,6 +9,7 @@ CONFIG -= app_bundle
 #DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
 
 HEADERS += \
+    DataWorker/dataworker.h \
     Interface/LED/led.h \
     Interface/LifeWidget/lifewidget.h \
     Interface/SettingWindow/ColorData/colordata.h \
@@ -18,6 +19,7 @@ HEADERS += \
     Model/Pair.h
 
 SOURCES += \
+        DataWorker/dataworker.cpp \
         Interface/LED/led.cpp \
         Interface/LifeWidget/lifewidget.cpp \
         Interface/SettingWindow/settingdialog.cpp \

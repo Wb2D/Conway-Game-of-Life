@@ -81,3 +81,37 @@ void Life::resize(const Pair &newSize) {
         _generation[i].resize(newSize.getY());
     }
 }
+
+QJsonObject Life::toJSON() const {
+    QJsonObject life;
+    life["fieldSize"] = QJsonObject {
+        {"x", _fieldSize.getX()},
+        {"y", _fieldSize.getY()}
+    };
+    life["gens"] = static_cast<int>(_gens);
+    life["status"] = _status;
+    QJsonArray generation;
+    for(int i = 0; i < _fieldSize.getX(); ++i) {
+        QJsonArray tmp;
+        for(int j = 0; j < _fieldSize.getY(); ++j) {
+            tmp.append(_generation[i][j]);
+        }
+        generation.append(tmp);
+    }
+    life["generation"] = generation;
+    return life;
+}
+
+void Life::fromJSON(const QJsonObject &obj) {
+    resize(Pair(obj["fieldSize"].toObject()["x"].toInt(),
+            obj["fieldSize"].toObject()["y"].toInt()));
+    _gens = obj["gens"].toInt();
+    _status = obj["status"].toBool();
+    QJsonArray generation = obj["generation"].toArray();
+    for(int i = 0; i < _fieldSize.getX(); ++i) {
+        QJsonArray tmp = generation[i].toArray();
+        for(int j = 0; j < _fieldSize.getY(); ++j) {
+            _generation[i][j] = tmp[j].toBool();
+        }
+    }
+}

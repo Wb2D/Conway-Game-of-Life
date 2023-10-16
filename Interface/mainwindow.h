@@ -4,12 +4,15 @@
 #include <QObject>
 #include <QMainWindow>
 #include <QMessageBox>
+#include <QFileDialog>
+#include <QString>
 
 #include "Model/Pair.h"
 #include "Interface/LifeWidget/lifewidget.h"
 #include "Interface/LED/led.h"
 #include "Interface/SettingWindow/ColorData/colordata.h"
 #include "Interface/SettingWindow/settingdialog.h"
+#include "DataWorker/dataworker.h"
 
 namespace Ui {
 class MainWindow;
@@ -43,9 +46,14 @@ private slots:
 
     void on_pushButton_8_clicked();
 
+    void on_pushButton_5_clicked();
+
+    void on_pushButton_6_clicked();
+
 private:
     void setLED(const bool&) const;
     void changeState(const bool&) const;
+    QString getPath();
 
     Ui::MainWindow *ui;
     SettingDialog *settingDialog;

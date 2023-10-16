@@ -5,6 +5,8 @@
 #include <QLabel>
 #include <QSize>
 #include <QVector>
+#include <QJsonObject>
+#include <QJsonArray>
 
 #include "Model/Pair.h"
 
@@ -18,6 +20,8 @@ class Life
 public:
     // конструктор с параметрами : размер поля
     Life(const Pair&);
+    // конструктор копирования
+    Life(const Life&);
 
 
     // геттеры
@@ -35,6 +39,11 @@ public:
     void clear();
     // генерация нового поколения на основе старого
     void next();
+
+    // методы для реализации чтения и записи
+    QJsonObject toJSON() const;
+    void fromJSON(const QJsonObject&);
+
 
 private:
     // метод для подсчета числа живых соседей заданной клетки
