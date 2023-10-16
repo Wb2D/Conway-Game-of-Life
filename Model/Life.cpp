@@ -1,30 +1,36 @@
 #include "Life.h"
 
 Life::Life(const Pair &obj) :
-    _fieldSize(obj.getX(), obj.getY()) {
+    _fieldSize(obj.getX(), obj.getY()),
+    _gens(0),
+    _status(false) {
     _generation.resize(_fieldSize.getX());
     for(int i = 0; i < _fieldSize.getX(); ++i) {
         _generation[i].resize(_fieldSize.getY());
     }
 }
 
-void Life::setLife(const Pair &cell) {
+void Life::invert(const Pair &cell) {
     if(cell.getX() >= 0 && cell.getX() < _fieldSize.getX() &&
             cell.getY() >= 0 && cell.getY() < _fieldSize.getY()) {
-        _generation[cell.getX()][cell.getY()] = true;
+        _generation[cell.getX()][cell.getY()] ^= true;
+        if(_generation[cell.getX()][cell.getY()]) {
+            _status = true;
+        }
     }
 }
 
-void Life::killAll() {
+void Life::clear() {
     for (int i = 0; i < _fieldSize.getX(); ++i) {
         for(int j = 0; j < _fieldSize.getY(); ++j) {
             _generation[i][j] = false;
         }
     }
+    _status = false;
+    _gens = 0;
 }
 
 int Life::calcEnvironment(const Pair &cell) const {
-
     int result = 0;
     for(int i = 0; i < 8; ++i) {
         int x = cell.getX() + _kPathX[i];
@@ -37,25 +43,38 @@ int Life::calcEnvironment(const Pair &cell) const {
     return result;
 }
 
-void Life::changeGeneration() {
-    QVector<QVector<bool>> result = _generation;
-    for(int i = 0; i < _fieldSize.getX(); ++i) {
-        for(int j = 0; j < _fieldSize.getY(); ++j) {
-            int stat = calcEnvironment(Pair(i, j));
-            if(_generation[i][j] && (stat < 2 || stat > 3 )) {
-                result[i][j] = false;
-            }
-            if(!_generation[i][j] && stat == 3) {
-                result[i][j] = true;
+void Life::next() {
+    if(_status) {
+        bool marker1 = false;
+        bool marker2 = false;
+        QVector<QVector<bool>> result = _generation;
+        for(int i = 0; i < _fieldSize.getX(); ++i) {
+            for(int j = 0; j < _fieldSize.getY(); ++j) {
+                int stat = calcEnvironment(Pair(i, j));
+                if(_generation[i][j] && (stat < 2 || stat > 3 )) {
+                    result[i][j] = false;
+                }
+                if(!_generation[i][j] && stat == 3) {
+                    result[i][j] = true;
+                }
+                // если хоть одно значение true, то считаю поколение живым
+                if(result[i][j]) {
+                    marker1 = true;
+                }
+                // поколения должны отличаться
+                if(_generation[i][j] != result[i][j]) {
+                    marker2 = true;
+                }
             }
         }
+        _status = marker1 && marker2;
+        ++_gens;
+        _generation = result;
     }
-    _generation = result;
-
 }
 
 void Life::resize(const Pair &newSize) {
-    killAll();
+    clear();
     _fieldSize = newSize;
     _generation.resize(newSize.getX());
     for(int i = 0; i < newSize.getX(); ++i) {

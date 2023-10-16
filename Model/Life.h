@@ -8,32 +8,42 @@
 
 #include "Model/Pair.h"
 
+/*
+ * [Программная реализация игры "Жизнь" Джона Конвея]
+ * https://en.wikipedia.org/wiki/Conway%27s_Game_of_Life
+*/
+
 class Life
 {
 public:
-    // конструктор с параметрами : высота, ширина
+    // конструктор с параметрами : размер поля
     Life(const Pair&);
 
-    // геттер поля _fieldSize
-    Pair getFieldSize() const { return _fieldSize; }
-    // возвращает элемент _generation
-    bool getElement(const Pair& obj) const { return _generation[obj.getX()][obj.getY()]; }
 
+    // геттеры
+    Pair size() const { return _fieldSize; }
+    unsigned int getGens() const { return _gens; }
+    bool getStatus() const { return _status; }
+
+    // возвращает элемент _generation
+    bool get(const Pair& obj) const { return _generation[obj.getX()][obj.getY()]; }
     // мето для изменения размера текущего вектора с очисткой
     void resize(const Pair&);
     // метод, дающий жизнь
-    void setLife(const Pair&);
+    void invert(const Pair&);
     // апокалипсис
-    void killAll();
+    void clear();
     // генерация нового поколения на основе старого
-    void changeGeneration();
+    void next();
 
 private:
     // метод для подсчета числа живых соседей заданной клетки
     int calcEnvironment(const Pair&) const;
 
-    Pair _fieldSize; // высота/ширина поля
+    Pair _fieldSize; // размеры поля
     QVector<QVector<bool>> _generation; // текущее поколение
+    unsigned int _gens; // число поколений, сменивших друг друга
+    bool _status; // все уже вымерли или еще нет?
 
     /* траектория движения при обходе клетки:
      * 2 1 8

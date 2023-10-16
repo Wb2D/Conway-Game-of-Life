@@ -9,21 +9,27 @@ CONFIG -= app_bundle
 #DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
 
 HEADERS += \
+    Interface/LED/led.h \
     Interface/LifeWidget/lifewidget.h \
+    Interface/SettingWindow/ColorData/colordata.h \
+    Interface/SettingWindow/settingdialog.h \
     Interface/mainwindow.h \
     Model/Life.h \
     Model/Pair.h
 
 SOURCES += \
+        Interface/LED/led.cpp \
         Interface/LifeWidget/lifewidget.cpp \
+        Interface/SettingWindow/settingdialog.cpp \
         Interface/mainwindow.cpp \
         Model/Life.cpp \
         main.cpp
+
+FORMS += \
+    Interface/SettingWindow/settingdialog.ui \
+    Interface/mainwindow.ui
 
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin
 else: unix:!android: target.path = /opt/$${TARGET}/bin
 !isEmpty(target.path): INSTALLS += target
-
-FORMS += \
-    Interface/mainwindow.ui

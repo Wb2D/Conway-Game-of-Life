@@ -3,56 +3,79 @@
 #include <QDebug>
 
 LifeWidget::LifeWidget(QWidget *parent) :
-    QGraphicsView(parent), _life(Pair(10, 10)), _timer(new QTimer(this)) {
-    _color = Qt::black;
+    QGraphicsView(parent),
+    _life(Pair(100, 100)),
+    _timer(new QTimer(this)),
+    _colorData(new ColorData(Qt::green, Qt::gray, Qt::black, true)) {
+
     // отключение полос прокрутки
     setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+
     // установка сцены и ограничение видимой области
-    setSceneRect(0, 0, _life.getFieldSize().getX(), _life.getFieldSize().getY());
+    setSceneRect(0, 0, _life.size().getX(), _life.size().getY());
+
     // таймер
     connect(_timer, SIGNAL(timeout()), this, SLOT(updateLife()));
-    _timer->setInterval(1000); // интервал в миллисекундах, 1000мс = 1с
-    // это костыль для заполнения начальной матрицы, мб позже сделаю по клику
-    _life.setLife(Pair(1, 2));
-    _life.setLife(Pair(1, 3));
-    _life.setLife(Pair(1, 4));
+    _timer->setInterval(1000); // интервал в мс, ставлю дефолтный в 1с
+
+    // ЗДЕСЬ КОГДА-ТО БЫЛ ВЕЛИКИЙ КОСТЫЛЬ, НО ТЕПЕРЬ ЕГО НЕТ Т_Т
+    // НИЧТО НЕ ВЕЧНО. ЖИЗНЬ - ТЛЕН.
 }
 
-void LifeWidget::paintEvent(QPaintEvent* ) {
-    QPainter painter(viewport());  // QPainter для отображения виджета
-    // масштабирования для отображения ячеек
+void LifeWidget::setSettings(QPainter &painter) const {
+    // коэффициенты масштабирования
     qreal scaleX = width() / (sceneRect().width() * _kCellSize);
     qreal scaleY = height() / (sceneRect().height() * _kCellSize);
+
     // установка масштабирования для QPainter
-    painter.setMatrix(QMatrix().scale(scaleX, scaleY));
+    painter.setWorldTransform(QTransform().scale(scaleX, scaleY), false);
+
     // сглаживание
-    painter.setRenderHint(QPainter::Antialiasing, true);
-    painter.setRenderHint(QPainter::HighQualityAntialiasing, true);
-    // задаю цвета для живых и мертвых клеток
-    QPen cellPen(_color);
-    painter.setPen(cellPen);
-    // отрисовка ячеек
-    for(int i = 0; i < _life.getFieldSize().getX(); ++i) {
-        for(int j = 0; j < _life.getFieldSize().getY(); ++j) {
+    painter.setRenderHint(QPainter::Antialiasing, _colorData->getFlagB());
+    painter.setRenderHint(QPainter::HighQualityAntialiasing, _colorData->getFlagB());
+}
+
+QPen LifeWidget::createPen() const {
+    QPen pen(_colorData->getColorB());
+    if(!_colorData->getFlagB()) {
+        pen.setStyle(Qt::NoPen);
+    }
+    return pen;
+}
+
+void LifeWidget::drawCells(QPainter &painter) const {
+    for(int i = 0; i < _life.size().getX(); ++i) {
+        for(int j = 0; j < _life.size().getY(); ++j) {
             int x = i * _kCellSize;
             int y = j * _kCellSize;
             QRect square(x, y, _kCellSize, _kCellSize);
 
-            QColor state = (_life.getElement(Pair(i, j))) ? _kAlive : _kDead;
-            painter.fillRect(square, QBrush(state));
+            // определение цвета, зависящего от состояния
+            QColor state = (_life.get(Pair(i, j))) ?
+                        _colorData->getColorA() : _colorData->getColorD();
 
-            painter.setPen(cellPen);
+            painter.fillRect(square, QBrush(state));
             painter.drawRect(square);
         }
     }
+}
 
-    painter.end();  // Завершаю рисование
+void LifeWidget::paintEvent(QPaintEvent*) {
+    QPainter painter(viewport());  // QPainter для отображения виджета
+    setSettings(painter);     // применение настроек масштабирования и сглаживания
+    painter.setPen(createPen());
+    drawCells(painter); // отрисовка ячеек
+    painter.end();  // завершаю рисование
 }
 
 void LifeWidget::updateLife() {
-    _life.changeGeneration();
+    _life.next();
     viewport()->update();
+    emit generationUpdate(_life.getGens());
+    if(!_life.getStatus()) {
+        emit generationStopped();
+    }
 }
 
 void LifeWidget::start() const {
@@ -64,6 +87,53 @@ void LifeWidget::stop() const {
 }
 
 void LifeWidget::step() {
-    _life.changeGeneration();
+    _life.next();
+    viewport()->update();
+    emit generationUpdate(_life.getGens());
+}
+
+/*
+ * f(x) = pos(x) / scale(x) / size, где
+ * scale(x) = window(x) / (rect(x) *  size) =>
+ * если подставить scale(x) в формулу, то видно,
+ * как переменную size можно сократить
+*/
+void LifeWidget::mousePressEvent(QMouseEvent *event) {
+    Pair obj = Pair((event->pos().x() * sceneRect().width()) / width(),
+                    (event->pos().y() * sceneRect().height()) / height());
+
+     _life.invert(obj);
+     viewport()->update();
+}
+
+void LifeWidget::speed(const int &interval) const {
+    _timer->setInterval(interval);
+}
+
+void LifeWidget::resize(const Pair &newSize) {
+    _life.resize(newSize);
+    setSceneRect(0, 0, newSize.getX(), newSize.getY()); // размер сцены
+    viewport()->update();
+}
+
+void LifeWidget::clear() {
+    _life.clear();
+    viewport()->update();
+}
+
+void LifeWidget::setColors(const ColorData &colorData) {
+    if(_colorData->getColorA() != colorData.getColorA()) {
+        _colorData->setColorA(colorData.getColorA());
+    }
+    if(_colorData->getColorD() != colorData.getColorD()) {
+        _colorData->setColorD(colorData.getColorD());
+    }
+    if(_colorData->getColorB() != colorData.getColorB()) {
+        _colorData->setColorB(colorData.getColorB());
+    }
+    if(_colorData->getFlagB() != colorData.getFlagB()) {
+        _colorData->setFlagB(colorData.getFlagB());
+    }
+
     viewport()->update();
 }
